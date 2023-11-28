@@ -21,46 +21,89 @@ class Course:
 
     @classmethod
     def create_table(cls):
-        pass
+        sql = '''CREATE TABLE IF NOT EXISTS courses(
+            id INTEGER PRIMARY KEY,
+            name Text
+        )'''
+        CURSOR.execute(sql)
+        #GIT ADD
+        CONN.commit()
+        #GIT COMMIT
+
         # creates the table if it doesn't exist
 
     @classmethod
     def get_all(cls):
-        pass
+        sql='''SELECT * fROM courses;
+        '''
+        read_all_tuples=CURSOR.execute(sql).fetchall()
+        all_courses =[]
+        for tup in read_all_tuples:
+            all_courses.append(Course(name=tup[1], id=[0]))
+        return all_courses
         # creates a new instance for each row in the db
 
     @classmethod
     def get_by_id(cls, id):
-        pass
+        sql ='''SELECT * FROM courses WHERE id=?'''
+
+        found_course_tuple=CURSOR.execute(sql, id).fetchall()
+        if found_course_tuple:
+            return Course(name=found_course_tuple[1], id=found_course_tuple[0])
+
         # finds by id and if found instantiates a new instance
 
 
     # --- SQL INSTANCE METHODS --- #
 
     def create(self):
-        pass
+        sql ='''INSERT INTO courses (name)
+        VALUE (?)
+        '''
+        CURSOR.execute(sql, [self.name])
+        #GIT ADD
+        CONN.commit()
+        #GIT COMMIT
         # creates in the db and updates instance with the new id
+        last_row_sql = 'SELECT * FROM courses ORDER BY DESC LIMIT 1'
+        last_row_tuple = CURSOR.execute(last_row_sql).fetchone()
+        self.id=last_row_tuple[0]
 
 
     def update(self):
-        pass
+        sql = '''UPDATE courses SET name=?
+        WHERE id= ?
+        '''
+        CURSOR.execute(sql, [self.name, self.id])
+        #GIT ADD
+        CONN.commit()
         # updates the row based on current attributes 
 
 
     def save(self):
-        pass
+        if not self.id:
+            self.create()
+        else:
+            self.update()
         # creates if it doesn't exist
         # updates if it does exist
 
     
     def destroy(self):
-        pass
+        sql = '''DELETE FROM courses Where id=?'''
+        CURSOR.execute(sql, [self.id])
+        #GIT ADD
+        CONN.commit()
+        self.id=None
         # deletes the instance from the db and removes the id
 
     # --- JOIN METHODS --- #
 
     def students(self):
-        pass
+        sql ='''
+        SELECT * FROM students WHERE course_id = ?'''
+        student_tuple=CURSOR.execute(sql, [self.id]).fetchall()
+        return [Student(id=student_tuple[0], name=student_tuple[1], grade=student_tuple[2], course_id=student_tuple[3]) for student in student_tuple]
         # return a list of instances of each student
 
 ############## END COURSE ##############
